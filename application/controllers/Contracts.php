@@ -44,7 +44,7 @@ class Contracts extends CI_Controller
 	public function contractsList()
 	{
 
-		$filter = isset($_GET['filter'])?strval($_GET['filter']):null;
+		$filter = isset($_GET['filter']) ? strval($_GET['filter']) : null;
 		$data['ln'] = $this->session->userdata('ln');
 		$data['ln'] = !empty($data['ln']) ? $data['ln'] : 'ar';
 		$data['menu'] = 'contracts';
@@ -98,7 +98,7 @@ class Contracts extends CI_Controller
 		$data['ID'] = $this->uri->segment(2);
 		$data['propertyData'] =  $this->contracts->getAllVacantProperties();
 		$dbdata = $this->contracts->getContractsByContractsNumber($this->uri->segment(2));
-		$data['contractsData'] = $dbdata?$dbdata:[];
+		$data['contractsData'] = $dbdata ? $dbdata : [];
 		// $data['contractsData'] = $this->contracts->getContractsById($this->uri->segment(2));
 		// print_r($data['contractsData']);
 		$data['tenantsData'] = $this->tenants->getAllTenants();
@@ -201,48 +201,48 @@ class Contracts extends CI_Controller
 			$mgmtFeesFixed = $this->input->post('mgmtFeesFixed');
 		}
 		// foreach ($this->input->post('units') as $value) {
-			$totalRent = $this->input->post('rentAmount') + $this->input->post('waterFee') + $this->input->post('electricityFee') + $this->input->post('otherFee');
-			$contractsData =  array(
-				// 'propertyId' => $this->input->post('propertyId'),
-				// 'unitNumber' => $value,
-				// 'tenantId' => $this->input->post('tenantId'),
-				// 'contractNumber' => $this->input->post('contractNumber'),
-				'contractPeriod' => $this->input->post('contractPeriod'),
-				'startDate' => $this->input->post('startDate'),
-				'expiryDate' => $this->input->post('expiryDate'),
-				// 'installments' => $this->input->post('installments'),
-				// 'rentAmount' => $this->input->post('rentAmount'),
-				'waterFee' => $this->input->post('waterFee'),
-				'electricityFee' => $this->input->post('electricityFee'),
-				'otherFee' => $this->input->post('otherFee'),
-				'totalRent' => $totalRent,
-				//'insurance' => $this->input->post('insurance'),
-				'agencyFee' => $this->input->post('agencyFee'),
-				'mgmtFeesPercentage' => $mgmtFeesPercentage,
-				'mgmtFeesFixed' => $mgmtFeesFixed,
-				// 'contractStatus' => 1,
-				'isActive' => '1',
-				// 'createdOn' => date("Y-m-d")
-			);
+		$totalRent = $this->input->post('rentAmount') + $this->input->post('waterFee') + $this->input->post('electricityFee') + $this->input->post('otherFee');
+		$contractsData =  array(
+			// 'propertyId' => $this->input->post('propertyId'),
+			// 'unitNumber' => $value,
+			// 'tenantId' => $this->input->post('tenantId'),
+			// 'contractNumber' => $this->input->post('contractNumber'),
+			'contractPeriod' => $this->input->post('contractPeriod'),
+			'startDate' => $this->input->post('startDate'),
+			'expiryDate' => $this->input->post('expiryDate'),
+			// 'installments' => $this->input->post('installments'),
+			// 'rentAmount' => $this->input->post('rentAmount'),
+			'waterFee' => $this->input->post('waterFee'),
+			'electricityFee' => $this->input->post('electricityFee'),
+			'otherFee' => $this->input->post('otherFee'),
+			'totalRent' => $totalRent,
+			//'insurance' => $this->input->post('insurance'),
+			'agencyFee' => $this->input->post('agencyFee'),
+			'mgmtFeesPercentage' => $mgmtFeesPercentage,
+			'mgmtFeesFixed' => $mgmtFeesFixed,
+			// 'contractStatus' => 1,
+			'isActive' => '1',
+			// 'createdOn' => date("Y-m-d")
+		);
 
 
-			if ($this->input->post('action') == 'Edit') {
-				$this->db->where("contractNumber", $contractNumber);
-				$this->db->update('tbl_contracts', $contractsData);
-			} else {
-				// $this->db->insert('tbl_contracts', $contractsData);
-			}
+		if ($this->input->post('action') == 'Edit') {
+			$this->db->where("contractNumber", $contractNumber);
+			$this->db->update('tbl_contracts', $contractsData);
+		} else {
+			// $this->db->insert('tbl_contracts', $contractsData);
+		}
 
-			// $unitData =  array(
-			// 	'id' => $value,
-			// 	'propertyId' => $this->input->post('propertyId'),
-			// 	'currentStatus' => 1,
-			// 	'isActive' => '1',
-			// 	'createdOn' => date("Y-m-d")
-			// );
-			// $this->db->where("propertyId", $this->input->post('propertyId'));
-			// $this->db->where("id", $value);
-			// $this->db->update('tbl_units', $unitData);
+		// $unitData =  array(
+		// 	'id' => $value,
+		// 	'propertyId' => $this->input->post('propertyId'),
+		// 	'currentStatus' => 1,
+		// 	'isActive' => '1',
+		// 	'createdOn' => date("Y-m-d")
+		// );
+		// $this->db->where("propertyId", $this->input->post('propertyId'));
+		// $this->db->where("id", $value);
+		// $this->db->update('tbl_units', $unitData);
 		// }
 
 
@@ -516,6 +516,25 @@ class Contracts extends CI_Controller
 		}
 	}
 
+	public function updateManagementFee()
+	{
+		$pData =  (object)array(
+			'id' => $this->input->post('recordId'),
+			'contractNumber' =>  $this->input->post('contractNumber'),
+			'paidAmt' =>  $this->input->post('paidAmt'),
+			'pendingAmt' =>  $this->input->post('pendingAmt'),
+			'totalAmt' =>  $this->input->post('totalAmt')
+		);
+		$res = $this->contracts->updateAgencyFeeTrans($pData);
+		if ($res) {
+			$data['status'] = "true";
+			$data['message'] =  $this->lang->line('MANAGEMENT_FEE_ADDED_SUCCESSFULLY');
+		} else {
+			$data['status'] = "false";
+			$data['message'] =  "not updated";
+		}
+		echo json_encode($data);
+	}
 	public function getManagementFee()
 	{
 

@@ -172,14 +172,13 @@ $sess = (object)($this->session->userdata); ?>
                                         <td><input type="number" class="form-control input-lg" name="agencyPaidAmount" style="background: rgba(0, 0, 0, 0); border: none;" id="agencyPaidAmount" value="<?php echo $agencyPaidAmount; ?>" readonly></td>
                                         <td><input type="number" class="form-control input-lg" name="agencyPendingAmount" style="background: rgba(0, 0, 0, 0); border: none; color:red;" id="agencyPendingAmount" value="<?php echo $agencyPendingAmount; ?>" readonly></td>
 
-                                        <td><input type="date" class="form-control" name="agencyPaymentDate" id="agencyPaymentDate" <?php
-                                                                                                                                    if (isset($agencyPaidStatus) && ($agencyPaidStatus == 1)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> value="<?php if (isset($agentData->paidDate)) {
-                                                                                                                                                                                                                                                                            echo ($agentData->paidDate);
-                                                                                                                                                                                                                                                                        } else {
-                                                                                                                                                                                                                                                                            echo  date('Y-m-d');
-                                                                                                                                                                                                                                                                        }
+                                        <td><input type="date" class="form-control" name="agencyPaymentDate" id="agencyPaymentDate" <?php if (isset($agencyPaidStatus) && ($agencyPaidStatus == 1)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> value="<?php if (isset($agentData->paidDate)) {
+                                                                                                                                                                                                                                                                                    echo ($agentData->paidDate);
+                                                                                                                                                                                                                                                                                } else {
+                                                                                                                                                                                                                                                                                    echo  date('Y-m-d');
+                                                                                                                                                                                                                                                                                }
 
-                                                                                                                                                                                                                                                                        ?>"></td>
+                                                                                                                                                                                                                                                                                ?>"></td>
 
                                         <td>
 
@@ -269,10 +268,10 @@ $sess = (object)($this->session->userdata); ?>
 
                                             <td><input type="date" class="form-control" name="paymentDate[]" id="paymentDate" <?php
                                                                                                                                 if (isset($status) && ($status == 1)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> value="<?php if (isset($managementData[$i - 1]->paidDate)) {
-                                                                                                                                                                                                                                                    echo ($managementData[$i - 1]->paidDate);
-                                                                                                                                                                                                                                                } else {
-                                                                                                                                                                                                                                                    echo  date('Y-m-d');
-                                                                                                                                                                                                                                                } ?>"></td>
+                                                                                                                                                                                                                                                        echo ($managementData[$i - 1]->paidDate);
+                                                                                                                                                                                                                                                    } else {
+                                                                                                                                                                                                                                                        echo  date('Y-m-d');
+                                                                                                                                                                                                                                                    } ?>"></td>
                                             <td>
 
                                                 <input type="text" class="form-control input-lg" name="mgmtNotes[]" id="mgmtNotes">
@@ -353,7 +352,24 @@ $sess = (object)($this->session->userdata); ?>
                                         echo date_format($d, 'd-m-Y');
 
                                         ?></td>
-                                    <td><?php echo $recordMgmtData[$i]->paidAmount; ?></td>
+                                    <td>
+                                        <div class="d-flex align-items-start gap-2">
+                                            <div>
+                                           
+                                                <input type="number" scope="any" class="form-control upateTransData" value="<?php echo $recordMgmtData[$i]->paidAmount; ?>">
+                                              
+                                                <input type="hidden" scope="any" class="form-control upateTransTotalAmt" value="<?php echo $recordMgmtData[$i]->totalAmount; ?>">
+                                                <input type="hidden" scope="any" class="form-control upateTransPendingAmt" value="<?php echo $recordMgmtData[$i]->pendingAmount; ?>">
+                                                <input type="hidden" scope="any" class="form-control upateTransId" value="<?php echo $recordMgmtData[$i]->id; ?>">
+                                               
+                                            </div>
+                                            <div>
+                                                <button id="<?php echo uniqid(rand(100, 999)); ?>" class="btn btn-primary upateTransBtn">
+                                                    <span class="d-flex gap-2 align-items-center"><i class="fas fa-arrow-left"></i> Update</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td><?php echo $recordMgmtData[$i]->pendingAmount; ?></td>
                                     <td><?php if ($recordMgmtData[$i]->paidStatus == 1) {
                                             echo $this->lang->line('COMPLETELY_PAID');
@@ -404,6 +420,54 @@ $sess = (object)($this->session->userdata); ?>
                 }
             }).get();
     });
+
+    const upateTransId = document.querySelectorAll(".upateTransId");
+    const upateTransTotalAmt = document.querySelectorAll(".upateTransTotalAmt");
+    const upateTransPendingAmt = document.querySelectorAll(".upateTransPendingAmt");
+    const upateTransData = document.querySelectorAll(".upateTransData");
+    const updateBtnArr = document.querySelectorAll(".upateTransBtn");
+    var cn = document.querySelector("#contractNumber").value;
+
+    for (let i = 0; i < updateBtnArr.length; i++) {
+        updateBtnArr[i].addEventListener("click", (function(index) {
+            return function() {
+                const data = {
+                    recordId:upateTransId[index].value,
+                    paidAmt: upateTransData[index].value,
+                    pendingAmt: upateTransPendingAmt[index].value,
+                    totalAmt: upateTransTotalAmt[index].value,
+                    contractNumber: cn
+                };
+                sendViaJax(
+                    data,
+                    `contracts/updateManagementFee`,
+                    `contracts/management/${cn}`
+                );
+            };
+        })(i));
+    }
+
+    function sendViaJax(data, reqUrl, returnUrl) {
+        $.ajax({
+            url: `<?php echo site_url(); ?>${reqUrl}`,
+            dataType: 'json',
+            method: "POST",
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(".transferBtn").prop('disabled', true);
+            },
+            success: function(data) {
+                if (data.status == "true") {
+                    showSuccessToast(data.message, '<?php echo $this->lang->line('success')  ?>');
+                    setTimeout(function() {
+                        window.location.href = `<?php echo base_url(); ?>${returnUrl}`;
+                    }, 4000);
+                }
+            }
+        });
+    }
+
 
     function receiveAgencyPayment() {
 

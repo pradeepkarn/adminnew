@@ -13,5 +13,5 @@ config.ini
 temp*.txt
 *.zip
 .htaccess
-attachments/data/csv/expiringcontracts.csv
-attachments/data/pdf/expiringcontracts.pdf
+*.csv
+*.pdf

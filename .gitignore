@@ -1,0 +1,17 @@
+
+# Ignore build artifacts
+application/config/database.php
+application/config/config.php
+
+# Ignore sensitive configuration files
+config.ini
+
+# Ignore logs
+*.log
+
+# Ignore temporary files
+temp*.txt
+*.zip
+.htaccess
+attachments/data/csv/expiringcontracts.csv
+attachments/data/pdf/expiringcontracts.pdf

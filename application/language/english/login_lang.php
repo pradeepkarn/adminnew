@@ -1,0 +1,22 @@
+<?php
+$lang['get_started'] = 'Sign in to start your session';
+$lang['signin_continue'] = 'Sign in to continue';
+$lang['username'] = 'Username';
+$lang['password'] = 'Password';
+$lang['forgot_password'] = 'Forgot password?';
+$lang['keep_me_signed_in'] = 'Keep me signed in';
+$lang['signin'] = 'Sign In';
+$lang['loading'] = 'Loading...';
+$lang['invalid_login'] = 'Unauthenticated User! Access Denied.';
+$lang['forgot_pwd'] = 'Enter your username to reset password'; //forgot password page
+$lang['goback_login'] = 'Go back to login'; //forgot password page
+$lang['submit'] = 'Submit';
+$lang['username_not_recognised'] = 'Username not recognised';
+$lang['error'] = 'Error';
+$lang['dear'] = 'Dear';
+$lang['your_login_credentials'] = 'Your login credentials';
+$lang['email'] = 'Email';
+$lang['reset_password'] = 'Reset Password';
+$lang['reset_password_has_been_sent_to_your_email'] = 'Reset password has been sent to your email';
+$lang['forgot_password2'] = 'Forgot Password';
+$lang['thank_you'] = 'Thank you';

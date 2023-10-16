@@ -1,0 +1,24 @@
+[09-Feb-2020 17:18:30 CST6CDT] PHP Fatal error:  Uncaught Error: Call to undefined function base_url() in /home/majal003/rd/test.php:37
+Stack trace:
+#0 {main}
+  thrown in /home/majal003/rd/test.php on line 37
+[09-Feb-2020 17:27:17 CST6CDT] PHP Fatal error:  Uncaught Error: Call to undefined function base_url() in /home/majal003/rd/test.php:48
+Stack trace:
+#0 {main}
+  thrown in /home/majal003/rd/test.php on line 48
+[09-Feb-2020 17:30:17 CST6CDT] PHP Fatal error:  Uncaught Error: Call to undefined function base_url() in /home/majal003/rd/test.php:50
+Stack trace:
+#0 {main}
+  thrown in /home/majal003/rd/test.php on line 50
+[09-Feb-2020 17:32:55 CST6CDT] PHP Fatal error:  Uncaught Error: Call to undefined function base_url() in /home/majal003/rd/test.php:50
+Stack trace:
+#0 {main}
+  thrown in /home/majal003/rd/test.php on line 50
+[10-Feb-2020 22:53:01 CST6CDT] PHP Fatal error:  Uncaught Error: Call to undefined function base_url() in /home/majal003/rd/test.php:50
+Stack trace:
+#0 {main}
+  thrown in /home/majal003/rd/test.php on line 50
+[01-Mar-2020 06:19:45 CST6CDT] PHP Fatal error:  Uncaught Error: Call to undefined function base_url() in /home/majal003/rd/test.php:50
+Stack trace:
+#0 {main}
+  thrown in /home/majal003/rd/test.php on line 50

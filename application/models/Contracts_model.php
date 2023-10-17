@@ -489,30 +489,32 @@ class Contracts_model extends CI_Model
 			$sql = "SELECT agencyFee FROM tbl_contracts WHERE contractNumber = '{$data->contractNumber}'";
 			$agencyFee = $this->db->query($sql)->row()->agencyFee;
 			
-			$sql = "SELECT * FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND id >= {$data->id} ORDER BY id ASC";
+			$sql = "SELECT * FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND id >= {$data->id} AND type=1 ORDER BY id ASC";
 			$hdsg = $this->db->query($sql);
 			$rw = $hdsg->result();
+			
 			$prevPending = $data->totalAmt - $data->paidAmt;
 			for ($i = 0; $i < count($rw); $i++) {
 				if ($i == 0) {
 					$sql = "UPDATE tbl_managementfee 
                         SET paidAmount = '{$data->paidAmt}',
                         pendingAmount = '$prevPending'
-                        WHERE id = {$data->id}";
+                        WHERE id = {$data->id} and type=1";
 					$this->db->query($sql);
 				} else {
 					$currentPaid = $this->db->query("SELECT paidAmount FROM tbl_managementfee WHERE id = '{$rw[$i]->id}'")->row()->paidAmount;
 					$sql = "UPDATE tbl_managementfee 
                         SET pendingAmount = ($prevPending - $currentPaid),
                         totalAmount = '$prevPending'
-                        WHERE id = {$rw[$i]->id}";
+                        WHERE id = {$rw[$i]->id} AND type=1";
 					$this->db->query($sql);
 					$prevPending -= $currentPaid;
 				}
 			}
 
-			$sql = "SELECT SUM(paidAmount) as totalPaidAmount FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}'";
+			$sql = "SELECT SUM(paidAmount) as totalPaidAmount FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND type = 1";
 			$result = $this->db->query($sql)->row();
+			// echo $result->totalPaidAmount;
 			if ($result->totalPaidAmount > $agencyFee) {
 				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
 				return false;

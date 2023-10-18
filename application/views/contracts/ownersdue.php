@@ -225,14 +225,11 @@ $sess = (object)($this->session->userdata); ?>
                                         $status = 0;
                                     }
 
-
-
                                     if (isset($ownersdueData[$i - 1]->pendingAmount)) {
                                         $pendingAmount = $ownersdueData[$i - 1]->pendingAmount;
                                     } else {
                                         $pendingAmount =   $totalRent;
                                     }
-
 
                                 ?>
                                     <tr>
@@ -249,9 +246,9 @@ $sess = (object)($this->session->userdata); ?>
                                                                                                                                                                         echo date_format($d, 'Y-m-d');
                                                                                                                                                                         ?>" readonly> </td>
                                         <td><input type="text" class="form-control input-lg paymentAmount" name="paymentAmount[]" id="paymentAmount" value="<?php echo  $totalRent; ?>" <?php
-                                                                                                                                                                                        if ((isset($status) && ($status == 1)) || ($totalRent == 0)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> readonly></td>
+                                                                                                                                                                                        if ((isset($status) && ($status == 1)) || ($totalRent == 0)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?>></td>
                                         <td><input type="number" class="form-control input-lg" name="paidAmount" style="background: rgba(0, 0, 0, 0); border: none;" id="paidAmount" value="<?php echo $totalPaidAmount;    ?>" readonly></td>
-                                        <td><input type="number" class="form-control input-lg" name="pendingAmount[]" style="background: rgba(0, 0, 0, 0); border: none; color:red;" id="pendingAmount" <?php if (isset($status) && ($status == 1)) { ?> value="0.00" <?php } else { ?> value="<?php echo $totalRent; ?>" <?php } ?> readonly></td>
+                                        <td><input type="number" class="form-control input-lg" name="pendingAmount[]" style="background: rgba(0, 0, 0, 0); border: none; color:red;" id="pendingAmount" <?php if (isset($status) && ($status == 1)) { ?> value="<?php echo $pendingAmount; ?>" <?php } else { ?> value="<?php echo $totalRent; ?>" <?php } ?> readonly></td>
 
                                         <td><input type="date" class="form-control" name="paymentDate[]" id="paymentDate" <?php
                                                                                                                             if ((isset($status) && ($status == 1)) || ($totalRent == 0)) {  ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> value="<?php if (isset($ownersdueData[$i - 1]->paidDate)) {
@@ -273,7 +270,13 @@ $sess = (object)($this->session->userdata); ?>
                                                     <font color="blue"><b>-</b></font>
 
                                                 <?php } else  if ((isset($status) && ($status == 1))) { ?>
-                                                    <font color="blue"><b><?php echo $this->lang->line('COMPLETED'); ?></b></font>
+                                                    <?php if ($pendingAmount > 0) : ?>
+                                                        <button id="<?php echo $i; ?>" onClick="receive(this.id)" title="<?php echo $this->lang->line('TRANSFER'); ?>" class="btn btn-sm btn-primary transferBtn">
+                                                            <?php echo $this->lang->line('TRANSFER'); ?>
+                                                        </button>
+                                                    <?php elseif(($pendingAmount == 0)) : ?>
+                                                        <font color="blue"><b><?php echo $this->lang->line('COMPLETED'); ?></b></font>
+                                                    <?php endif; ?>
                                                     <?php }
                                                 } else {
 

@@ -1,20 +1,69 @@
-<div class="content-wrapper">
-    <div class="page-header">
-        <div class="container text-center">
-            <button title="<?php echo $this->lang->line('PAYMENTS'); ?>" onclick="payments('<?php echo ($ownersdueData[0]->contractNumber); ?>');" type="button" class="btn btn-sm btn-primary"><?php echo $this->lang->line('PAYMENTS'); ?> </button>
-            <button title="<?php echo $this->lang->line('EXPENSES'); ?>" onclick="expenses('<?php echo ($ownersdueData[0]->contractNumber); ?>');" type="button" class="btn btn-sm btn-danger"><?php echo $this->lang->line('EXPENSES'); ?> </button>
-            <button title="<?php echo $this->lang->line('MANAGEMENT_FEES'); ?>" onclick="management('<?php echo ($ownersdueData[0]->contractNumber); ?>');" type="button" class="btn btn-sm btn-success"><?php echo $this->lang->line('MANAGEMENT_FEES'); ?> </button>
-            <!-- <button title="<?php echo $this->lang->line('OWNER_DUES'); ?>" onclick="ownersdue('<?php echo ($ownersdueData[0]->contractNumber); ?>');" type="button" class="btn btn-sm btn-info"><?php echo $this->lang->line('OWNER_DUES'); ?> </button> -->
-            <button title="<?php echo $this->lang->line('STATEMENT'); ?>" onclick="statement('<?php echo ($ownersdueData[0]->contractNumber); ?>');" type="button" class="btn btn-sm btn-secondary"><?php echo $this->lang->line('STATEMENT'); ?> </button>
+<?php
 
+$sess = (object)($this->session->userdata); ?>
+<link href="<?php echo base_url('assets/static/assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css'); ?>" rel="stylesheet" />
+<div class="page-wrapper">
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-7 align-self-center">
+                <h4 class="page-title text-truncate text-dark font-weight-medium mb-1"><?php echo $this->lang->line('OWNER_DUES'); ?></h4>
+                <div class="d-flex align-items-center">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb m-0 p-0">
+                            <li class="breadcrumb-item"><a href="<?php echo base_url('contracts') ?>" class="text-muted"><?php echo $this->lang->line('CONTRACTS'); ?></a></li>
+                            <li class="breadcrumb-item text-muted active" aria-current="page"><?php echo $this->lang->line('OWNER_DUES'); ?></li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-5 align-self-center">
+                <!-- <div class="customize-input float-right">
+                    <a href="<?php echo base_url('add-contracts'); ?>" style="border-radius: 50px;" class="btn btn-primary text-white"><?php echo $this->lang->line('add'); ?></a>
+                </div> -->
+            </div>
+        </div>
+    </div>
 
-            <div class="w3-row">
+    <?php if ($sess->ag_can_create == 1 || $sess->ag_can_update == 1) : ?>
+        <div class="container-fluid text-center">
+            <?php if (!isset($contractsData->contractNumber)) :
+                $contractNumber = $ID;
+            else :
+                $contractNumber = $contractsData->contractNumber;
+            endif;
+            ?>
+
+            <button title="<?php echo $this->lang->line('EXPENSES'); ?>" onclick="expenses('<?php echo $contractNumber; ?>');" type="button" class="btn btn-sm btn-danger"><?php echo $this->lang->line('EXPENSES'); ?> </button>
+            <button title="<?php echo $this->lang->line('PAYMENTS'); ?>" onclick="payments('<?php echo $contractNumber; ?>');" type="button" class="btn btn-sm btn-success"><?php echo $this->lang->line('PAYMENTS'); ?> </button>
+            <button title="<?php echo $this->lang->line('MANAGEMENT_FEES'); ?>" onclick="management('<?php echo $contractNumber; ?>');" type="button" class="btn btn-sm btn-success"><?php echo $this->lang->line('MANAGEMENT_FEES'); ?> </button>
+            <!-- <button title="<?php echo $this->lang->line('OWNER_DUES'); ?>" onclick="ownersdue('<?php echo $contractNumber; ?>');" type="button" class="btn btn-sm btn-info"><?php echo $this->lang->line('OWNER_DUES'); ?> </button> -->
+            <button title="<?php echo $this->lang->line('STATEMENT'); ?>" onclick="statement('<?php echo $contractNumber; ?>');" type="button" class="btn btn-sm btn-secondary"><?php echo $this->lang->line('STATEMENT'); ?> </button>
+
+            <!-- <div class="w3-row">
                 <a href="javascript:void(0)" onclick="openTab(event, 'ownersdue');">
                     <div class="w3-third tablink w3-bottombar w3-border-red w3-padding"><?php echo $this->lang->line('OWNER_DUES'); ?></div>
                 </a>
                 <a href="javascript:void(0)" onclick="openTab(event, 'Records');">
                     <div class="w3-third tablink w3-bottombar w3-hover-light-grey w3-padding"><?php echo $this->lang->line('RECORDS'); ?></div>
                 </a>
+            </div> -->
+            <div class="d-block mt-4">
+                <button type="button" type="button" class="btn btn-sm btn-primary" onclick="openTab(event, 'ownersdue');">
+                    <div class="tablink">
+                        <?php echo $this->lang->line('OWNER_DUES'); ?>
+                    </div>
+                </button>
+                <button type="button" type="button" class="btn btn-sm btn-success" onclick="openTab(event, 'Records');">
+                    <div class="tablink">
+                        <?php echo $this->lang->line('RECORDS'); ?>
+                    </div>
+                </button>
+            </div>
+            <div class="alert alertSuccess">
+
             </div>
             <div id="ownersdue" class="w3-container city mt-4">
                 <div class="table-responsive">
@@ -176,8 +225,6 @@
                                         $status = 0;
                                     }
 
-
-
                                     if (isset($ownersdueData[$i - 1]->pendingAmount)) {
                                         $pendingAmount = $ownersdueData[$i - 1]->pendingAmount;
                                     } else {
@@ -200,9 +247,9 @@
                                                                                                                                                                         echo date_format($d, 'Y-m-d');
                                                                                                                                                                         ?>" readonly> </td>
                                         <td><input type="text" class="form-control input-lg paymentAmount" name="paymentAmount[]" id="paymentAmount" value="<?php echo  $totalRent; ?>" <?php
-                                                                                                                                                                                        if ((isset($status) && ($status == 1)) || ($totalRent == 0)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> readonly></td>
+                                                                                                                                                                                        if ((isset($status) && ($status == 1)) || ($totalRent == 0)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> ></td>
                                         <td><input type="number" class="form-control input-lg" name="paidAmount" style="background: rgba(0, 0, 0, 0); border: none;" id="paidAmount" value="<?php echo $totalPaidAmount;    ?>" readonly></td>
-                                        <td><input type="number" class="form-control input-lg" name="pendingAmount[]" style="background: rgba(0, 0, 0, 0); border: none; color:red;" id="pendingAmount" <?php if (isset($status) && ($status == 1)) { ?> value="0.00" <?php } else { ?> value="<?php echo $totalRent; ?>" <?php } ?> readonly></td>
+                                        <td><input type="number" class="form-control input-lg" name="pendingAmount[]" style="background: rgba(0, 0, 0, 0); border: none; color:red;" id="pendingAmount" <?php if (isset($status) && ($status == 1)) { ?> value="<?php echo $pendingAmount; ?>" <?php } else { ?> value="<?php echo $totalRent; ?>" <?php } ?> readonly></td>
 
                                         <td><input type="date" class="form-control" name="paymentDate[]" id="paymentDate" <?php
                                                                                                                             if ((isset($status) && ($status == 1)) || ($totalRent == 0)) {  ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?> value="<?php if (isset($ownersdueData[$i - 1]->paidDate)) {
@@ -312,8 +359,12 @@
                     </table>
                 </div>
             </div>
+
+
+
+
         </div>
-    </div>
+    <?php endif; ?>
 </div>
 
 
@@ -433,3 +484,4 @@
         window.location.href = '<?php echo base_url('contracts/statement/') ?>' + id;
     }
 </script>
+<script src="<?php echo base_url('assets/vendors/datatables.net/jquery.dataTables.js') ?>"></script>

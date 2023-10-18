@@ -523,9 +523,17 @@ class Contracts extends CI_Controller
 			'contractNumber' =>  $this->input->post('contractNumber'),
 			'paidAmt' =>  $this->input->post('paidAmt'),
 			'pendingAmt' =>  $this->input->post('pendingAmt'),
-			'totalAmt' =>  $this->input->post('totalAmt')
+			'totalAmt' =>  $this->input->post('totalAmt'),
+			'type' =>  $this->input->post('type'),
 		);
-		$res = $this->contracts->updateAgencyFeeTrans($pData);
+		// echo $pData->type;
+		if ($pData->type==1) {
+			$res = $this->contracts->updateAgencyFeeTrans($pData);
+		}
+		if ($pData->type==2) {
+			$res = $this->contracts->updateManagementFeeTrans($pData);
+		}
+		
 		if ($res) {
 			$data['status'] = "true";
 			$data['message'] =  $this->lang->line('MANAGEMENT_FEE_ADDED_SUCCESSFULLY');

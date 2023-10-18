@@ -356,7 +356,7 @@ $sess = (object)($this->session->userdata); ?>
                                         <div class="d-flex align-items-start gap-2">
                                             <div>
                                            
-                                                <input type="number" scope="any" class="form-control upateTransData" value="<?php echo $recordMgmtData[$i]->paidAmount; ?>">
+                                                <input type="number" data-amtType="<?php echo $recordMgmtData[$i]->type; ?>" scope="any" class="form-control upateTransData" value="<?php echo $recordMgmtData[$i]->paidAmount; ?>">
                                               
                                                 <input type="hidden" scope="any" class="form-control upateTransTotalAmt" value="<?php echo $recordMgmtData[$i]->totalAmount; ?>">
                                                 <input type="hidden" scope="any" class="form-control upateTransPendingAmt" value="<?php echo $recordMgmtData[$i]->pendingAmount; ?>">
@@ -432,6 +432,7 @@ $sess = (object)($this->session->userdata); ?>
         updateBtnArr[i].addEventListener("click", (function(index) {
             return function() {
                 const data = {
+                    type:upateTransData[index].getAttribute("data-amtType"),
                     recordId:upateTransId[index].value,
                     paidAmt: upateTransData[index].value,
                     pendingAmt: upateTransPendingAmt[index].value,

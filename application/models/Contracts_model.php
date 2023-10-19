@@ -480,7 +480,20 @@ class Contracts_model extends CI_Model
 		$this->db->last_query();
 		return $this->db->insert_id();
 	}
-
+	public function updateExpensesTrans($data)
+	{
+		try {
+			$this->db->trans_start(); // Start transaction
+			$sql = "UPDATE tbl_expense SET expenseAmount = '$data->expenseAmt' WHERE tbl_expense.id = {$data->id}";
+			$this->db->query($sql);
+			$this->db->trans_commit(); // Commit the transaction if all operations are successful
+			return true;
+		} catch (Exception $e) {
+			$this->session->set_flashdata('error_message', 'Expesne not updated');
+			$this->db->trans_rollback(); // Rollback the transaction in case of any exception
+			return false;
+		}
+	}
 	public function updateAgencyFeeTrans($data)
 	{
 		try {
@@ -516,6 +529,7 @@ class Contracts_model extends CI_Model
 			$result = $this->db->query($sql)->row();
 			// echo $result->totalPaidAmount;
 			if ($result->totalPaidAmount > $agencyFee) {
+				$this->session->set_flashdata('error_message', 'Total paid can not be greater than Agency fees in contract');
 				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
 				return false;
 			}
@@ -542,7 +556,7 @@ class Contracts_model extends CI_Model
 			WHERE 
 			contractNumber = '{$data->contractNumber}';";
 			$mgmtFees = $this->db->query($sql)->row()->mgmtFees;
-			
+
 			$sql = "SELECT * FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND id >= {$data->id} AND type=2 ORDER BY id ASC";
 			$hdsg = $this->db->query($sql);
 			$rw = $hdsg->result();
@@ -569,8 +583,9 @@ class Contracts_model extends CI_Model
 			$sql = "SELECT SUM(paidAmount) as totalPaidAmount FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND type = 2";
 			$result = $this->db->query($sql)->row();
 			// echo $result->totalPaidAmount;
-			
+
 			if ($result->totalPaidAmount > $mgmtFees) {
+				$this->session->set_flashdata('error_message', 'Total paid can not be greater than Calculated management fees in contract');
 				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
 				return false;
 			}

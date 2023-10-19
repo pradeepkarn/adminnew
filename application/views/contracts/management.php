@@ -261,8 +261,8 @@ $sess = (object)($this->session->userdata); ?>
                                             <td><input type="date" id="installmentDate" name="installmentDate" style="background: rgba(0, 0, 0, 0); border: none;" value="<?php $d = date_create($dates[$i - 1]);
                                                                                                                                                                             echo date_format($d, 'Y-m-d');
                                                                                                                                                                             ?>" readonly> </td>
-                                            <td><input type="text" class="form-control input-lg paymentAmount" name="paymentAmount[]" id="paymentAmount" value="<?php echo  $totalRent; ?>" <?php
-                                                                                                                                                                                            if (isset($status) && ($status == 1)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?>></td>
+                                            <td><input type="text" class="form-control input-lg paymentAmount" name="paymentAmount[]" id="paymentAmount" value="<?php echo  $pendingAmount; ?>" <?php
+                                                                                                                                                                                            if (isset($status) && ($status == 1)) { echo "readonly"; ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?>></td>
                                             <td><input type="number" class="form-control input-lg" name="paidAmount" style="background: rgba(0, 0, 0, 0); border: none;" id="paidAmount" value="<?php echo $totalPaidAmount;    ?>" readonly></td>
                                             <td><input type="number" class="form-control input-lg" name="pendingAmount[]" style="background: rgba(0, 0, 0, 0); border: none; color:red;" id="pendingAmount" <?php if (isset($status) && ($status == 1)) { ?> value="0.00" <?php } else { ?> value="<?php echo $totalRent; ?>" <?php } ?> readonly></td>
 
@@ -355,13 +355,13 @@ $sess = (object)($this->session->userdata); ?>
                                     <td>
                                         <div class="d-flex align-items-start gap-2">
                                             <div>
-                                           
+
                                                 <input type="number" data-amtType="<?php echo $recordMgmtData[$i]->type; ?>" scope="any" class="form-control upateTransData" value="<?php echo $recordMgmtData[$i]->paidAmount; ?>">
-                                              
+
                                                 <input type="hidden" scope="any" class="form-control upateTransTotalAmt" value="<?php echo $recordMgmtData[$i]->totalAmount; ?>">
                                                 <input type="hidden" scope="any" class="form-control upateTransPendingAmt" value="<?php echo $recordMgmtData[$i]->pendingAmount; ?>">
                                                 <input type="hidden" scope="any" class="form-control upateTransId" value="<?php echo $recordMgmtData[$i]->id; ?>">
-                                               
+
                                             </div>
                                             <div>
                                                 <button id="<?php echo uniqid(rand(100, 999)); ?>" class="btn btn-primary upateTransBtn">
@@ -432,8 +432,8 @@ $sess = (object)($this->session->userdata); ?>
         updateBtnArr[i].addEventListener("click", (function(index) {
             return function() {
                 const data = {
-                    type:upateTransData[index].getAttribute("data-amtType"),
-                    recordId:upateTransId[index].value,
+                    type: upateTransData[index].getAttribute("data-amtType"),
+                    recordId: upateTransId[index].value,
                     paidAmt: upateTransData[index].value,
                     pendingAmt: upateTransPendingAmt[index].value,
                     totalAmt: upateTransTotalAmt[index].value,
@@ -464,6 +464,9 @@ $sess = (object)($this->session->userdata); ?>
                     setTimeout(function() {
                         window.location.href = `<?php echo base_url(); ?>${returnUrl}`;
                     }, 4000);
+                } else {
+                    showDangerToast(data.message, '<?php echo $this->lang->line('danger')  ?>');
+                    return false;
                 }
             }
         });

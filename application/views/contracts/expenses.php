@@ -194,16 +194,40 @@ $sess = (object)($this->session->userdata); ?>
                             ?>
                                     <tr>
                                         <td><?php echo $i + 1; ?></td>
-                                        <td><?php if ($expenseData[$i]->expenseType == 1) {
-                                                echo   $this->lang->line('MAINTENANCE');
-                                            } else {
-                                                echo $this->lang->line('ATTESTATION');
-                                            } ?></td>
-                                        <td><?php
-                                            $d = date_create($expenseData[$i]->expenseDate);
-                                            echo date_format($d, 'd-m-Y'); ?></td>
-                                        <td><?php echo $expenseData[$i]->expenseAmount; ?></td>
+                                        <td>
+                                            <select name="expenseType" class="form-select">
+                                                <option <?php if ($expenseData[$i]->expenseType == 1) {
+                                                            echo "selected";
+                                                        } ?> value="1"><?php echo $this->lang->line('MAINTENANCE'); ?></option>
+                                                <option <?php if ($expenseData[$i]->expenseType == 2) {
+                                                            echo "selected";
+                                                        } ?> value="2"><?php echo $this->lang->line('ATTESTATION'); ?></option>
+                                            </select>
+                                        </td>
+                                        <td><?php echo $expenseData[$i]->expenseDate; ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-start gap-2 justify-content-around">
+                                                <div>
+                                                    <input type="hidden" class="form-control upateTransId" value="<?php echo $expenseData[$i]->id; ?>">
+                                                    <input type="number" class="form-control upateTransData" value="<?php echo $expenseData[$i]->expenseAmount; ?>">
+                                                </div>
+                                                <div>
+                                                    <button id="<?php echo uniqid(rand(100, 999)); ?>" class="btn btn-primary upateTransBtn">
+                                                        <span class="d-flex gap-2 align-items-center"><i class="fas fa-arrow-left"></i> Update</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </td>
                                         <td><?php echo ($expenseData[$i]->note); ?></td>
+                                        <!-- <td>
+                                            <select name="chargeTo" class="form-select">
+                                                <option <?php //if ($expenseData[$i]->chargeTo == 0) {echo "selected";} 
+                                                        ?> value="0">-</option>
+                                                <option <?php //if ($expenseData[$i]->expenseType == 2) {echo "selected";} 
+                                                        ?> value="1">1</option>
+                                            </select>
+                                        </td> -->
                                         <td><?php if ($expenseData[$i]->chargeTo == 0) {
                                                 echo "-";
                                             } else {
@@ -232,6 +256,54 @@ $sess = (object)($this->session->userdata); ?>
     <?php endif; ?>
 </div>
 
+
+<script>
+     const upateTransId = document.querySelectorAll(".upateTransId");
+    const upateTransData = document.querySelectorAll(".upateTransData");
+    const updateBtnArr = document.querySelectorAll(".upateTransBtn");
+    var cn = document.querySelector("#contractNumber").value;
+
+    for (let i = 0; i < updateBtnArr.length; i++) {
+        updateBtnArr[i].addEventListener("click", (function(index) {
+            return function() {
+                const data = {
+                    recordId: upateTransId[index].value,
+                    expenseAmt: upateTransData[index].value,
+                    contractNumber: cn
+                };
+                sendViaJax(
+                    data,
+                    `contracts/updateExpenseFee`,
+                    `contracts//expenses/${cn}`
+                );
+            };
+        })(i));
+    }
+
+    function sendViaJax(data, reqUrl, returnUrl) {
+        $.ajax({
+            url: `<?php echo site_url(); ?>${reqUrl}`,
+            dataType: 'json',
+            method: "POST",
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(".transferBtn").prop('disabled', true);
+            },
+            success: function(data) {
+                if (data.status == "true") {
+                    showSuccessToast(data.message, '<?php echo $this->lang->line('success')  ?>');
+                    setTimeout(function() {
+                        window.location.href = `<?php echo base_url(); ?>${returnUrl}`;
+                    }, 4000);
+                } else {
+                    showDangerToast(data.message, '<?php echo $this->lang->line('danger')  ?>');
+                    return false;
+                }
+            }
+        });
+    }
+</script>
 
 <script>
     function openTab(evt, cityName) {

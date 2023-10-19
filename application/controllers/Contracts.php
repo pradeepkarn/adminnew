@@ -539,7 +539,27 @@ class Contracts extends CI_Controller
 			$data['message'] =  $this->lang->line('MANAGEMENT_FEE_ADDED_SUCCESSFULLY');
 		} else {
 			$data['status'] = "false";
-			$data['message'] =  "not updated";
+			$error_message = $this->session->flashdata('error_message');
+			$data['message'] =  $error_message?$error_message:'Not updated';
+		}
+		echo json_encode($data);
+	}
+	public function updateExpenseFee()
+	{
+		$pData =  (object)array(
+			'id' => $this->input->post('recordId'),
+			'contractNumber' =>  $this->input->post('contractNumber'),
+			'expenseAmt' =>  $this->input->post('expenseAmt')
+		);
+		$res = $this->contracts->updateExpensesTrans($pData);
+		
+		if ($res) {
+			$data['status'] = "true";
+			$data['message'] =  $this->lang->line('MANAGEMENT_FEE_ADDED_SUCCESSFULLY');
+		} else {
+			$data['status'] = "false";
+			$error_message = $this->session->flashdata('error_message');
+			$data['message'] =  $error_message?$error_message:'Not updated';
 		}
 		echo json_encode($data);
 	}

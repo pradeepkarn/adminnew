@@ -195,7 +195,7 @@ $sess = (object)($this->session->userdata); ?>
                                     <tr>
                                         <td><?php echo $i + 1; ?></td>
                                         <td>
-                                            <select name="expenseType" class="form-select">
+                                            <select name="expenseType" class="form-select upateTransExpenseType">
                                                 <option <?php if ($expenseData[$i]->expenseType == 1) {
                                                             echo "selected";
                                                         } ?> value="1"><?php echo $this->lang->line('MAINTENANCE'); ?></option>
@@ -258,6 +258,7 @@ $sess = (object)($this->session->userdata); ?>
 
 
 <script>
+     const upateTransExpenseType = document.querySelectorAll(".upateTransExpenseType");
      const upateTransId = document.querySelectorAll(".upateTransId");
     const upateTransData = document.querySelectorAll(".upateTransData");
     const updateBtnArr = document.querySelectorAll(".upateTransBtn");
@@ -268,6 +269,7 @@ $sess = (object)($this->session->userdata); ?>
             return function() {
                 const data = {
                     recordId: upateTransId[index].value,
+                    expenseType: upateTransExpenseType[index].value,
                     expenseAmt: upateTransData[index].value,
                     contractNumber: cn
                 };

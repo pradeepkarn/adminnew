@@ -533,6 +533,9 @@ class Contracts extends CI_Controller
 		if ($pData->type==2) {
 			$res = $this->contracts->updateManagementFeeTrans($pData);
 		}
+		if ($pData->type==3) {
+			$res = $this->contracts->updateOwnersDuesTrans($pData);
+		}
 		
 		if ($res) {
 			$data['status'] = "true";
@@ -549,7 +552,8 @@ class Contracts extends CI_Controller
 		$pData =  (object)array(
 			'id' => $this->input->post('recordId'),
 			'contractNumber' =>  $this->input->post('contractNumber'),
-			'expenseAmt' =>  $this->input->post('expenseAmt')
+			'expenseAmt' =>  $this->input->post('expenseAmt'),
+			'expenseType' =>  $this->input->post('expenseType'),
 		);
 		$res = $this->contracts->updateExpensesTrans($pData);
 		

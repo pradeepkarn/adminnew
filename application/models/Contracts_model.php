@@ -484,7 +484,7 @@ class Contracts_model extends CI_Model
 	{
 		try {
 			$this->db->trans_start(); // Start transaction
-			$sql = "UPDATE tbl_expense SET expenseAmount = '$data->expenseAmt' WHERE tbl_expense.id = {$data->id}";
+			$sql = "UPDATE tbl_expense SET expenseAmount = '$data->expenseAmt', expenseType='{$data->expenseType}' WHERE tbl_expense.id = {$data->id}";
 			$this->db->query($sql);
 			$this->db->trans_commit(); // Commit the transaction if all operations are successful
 			return true;
@@ -516,6 +516,7 @@ class Contracts_model extends CI_Model
 					$this->db->query($sql);
 				} else {
 					$currentPaid = $this->db->query("SELECT paidAmount FROM tbl_managementfee WHERE id = '{$rw[$i]->id}'")->row()->paidAmount;
+					$lastPending = $prevPending - $currentPaid;
 					$sql = "UPDATE tbl_managementfee 
                         SET pendingAmount = ($prevPending - $currentPaid),
                         totalAmount = '$prevPending'
@@ -528,8 +529,89 @@ class Contracts_model extends CI_Model
 			$sql = "SELECT SUM(paidAmount) as totalPaidAmount FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND type = 1";
 			$result = $this->db->query($sql)->row();
 			// echo $result->totalPaidAmount;
+			if ($lastPending<0) {
+				$this->session->set_flashdata('error_message', 'Remaining pending amount must be greater than or equal to 0');
+				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
+				return false;
+			}
 			if ($result->totalPaidAmount > $agencyFee) {
 				$this->session->set_flashdata('error_message', 'Total paid can not be greater than Agency fees in contract');
+				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
+				return false;
+			}
+
+			$this->db->trans_commit(); // Commit the transaction if all operations are successful
+			return true;
+		} catch (Exception $e) {
+			$this->db->trans_rollback(); // Rollback the transaction in case of any exception
+			return false;
+		}
+	}
+	public function updateOwnersDuesTrans($data)
+	{
+		try {
+			$this->db->trans_start(); // Start transaction
+			$sql = "SELECT 
+			CASE 
+				WHEN mgmtFeesPercentage = 0 THEN mgmtFeesFixed
+				ELSE ((totalRent / installments) * mgmtFeesPercentage)
+			END as mgmtFees 
+			FROM 
+				tbl_contracts 
+			WHERE 
+			contractNumber = '{$data->contractNumber}';";
+			$mgmtFees = $this->db->query($sql)->row()->mgmtFees;
+			
+			$sql = "select  SUM(expenseAmount) as expense from tbl_expense where tbl_expense.contractNumber = '{$data->contractNumber}';";
+
+			$expense = $this->db->query($sql)->row()->expense;
+			
+			$totalDeduction = floatval($mgmtFees) + floatval($expense);
+			
+			$sql = "SELECT totalRent FROM tbl_contracts WHERE contractNumber = '{$data->contractNumber}';";
+			
+			$totalRent = $this->db->query($sql)->row()->totalRent;
+			// echo "rent : $totalRent";
+			$amount_must_not_exceed = floatval($totalRent)-$totalDeduction;
+			// echo "totaldeduction : $totalDeduction";
+			// $sql = "SELECT agencyFee FROM tbl_contracts WHERE contractNumber = '{$data->contractNumber}'";
+			// $agencyFee = $this->db->query($sql)->row()->agencyFee;
+
+			$sql = "SELECT * FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND id >= {$data->id} AND type=3 ORDER BY id ASC";
+			$hdsg = $this->db->query($sql);
+			$rw = $hdsg->result();
+
+			$prevPending = $data->totalAmt - $data->paidAmt;
+			for ($i = 0; $i < count($rw); $i++) {
+				if ($i == 0) {
+					$sql = "UPDATE tbl_managementfee 
+                        SET paidAmount = '{$data->paidAmt}',
+                        pendingAmount = '$prevPending'
+                        WHERE id = {$data->id} and type=3";
+					$this->db->query($sql);
+				} else {
+					
+					$currentPaid = $this->db->query("SELECT paidAmount FROM tbl_managementfee WHERE id = '{$rw[$i]->id}'")->row()->paidAmount;
+					$lastPending = $prevPending - $currentPaid;
+					$sql = "UPDATE tbl_managementfee 
+                        SET pendingAmount = ($prevPending - $currentPaid),
+                        totalAmount = '$prevPending'
+                        WHERE id = {$rw[$i]->id} AND type=3";
+					$this->db->query($sql);
+					$prevPending -= $currentPaid;
+				}
+			}
+
+			$sql = "SELECT SUM(paidAmount) as totalPaidAmount FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND type = 3";
+			$result = $this->db->query($sql)->row();
+			// echo $result->totalPaidAmount;
+			if ($lastPending<0) {
+				$this->session->set_flashdata('error_message', 'Remaining pending amount must be greater than or equal to 0');
+				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
+				return false;
+			}
+			if ($result->totalPaidAmount > $amount_must_not_exceed) {
+				$this->session->set_flashdata('error_message', 'Total paid can not be greater than Owners dues');
 				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
 				return false;
 			}
@@ -571,6 +653,7 @@ class Contracts_model extends CI_Model
 					$this->db->query($sql);
 				} else {
 					$currentPaid = $this->db->query("SELECT paidAmount FROM tbl_managementfee WHERE id = '{$rw[$i]->id}'")->row()->paidAmount;
+					$lastPending = $prevPending - $currentPaid;
 					$sql = "UPDATE tbl_managementfee 
                         SET pendingAmount = ($prevPending - $currentPaid),
                         totalAmount = '$prevPending'
@@ -583,7 +666,11 @@ class Contracts_model extends CI_Model
 			$sql = "SELECT SUM(paidAmount) as totalPaidAmount FROM tbl_managementfee WHERE contractNumber = '{$data->contractNumber}' AND type = 2";
 			$result = $this->db->query($sql)->row();
 			// echo $result->totalPaidAmount;
-
+			if ($lastPending<0) {
+				$this->session->set_flashdata('error_message', 'Remaining pending amount must be greater than or equal to 0');
+				$this->db->trans_rollback(); // Rollback the transaction if the condition is met
+				return false;
+			}
 			if ($result->totalPaidAmount > $mgmtFees) {
 				$this->session->set_flashdata('error_message', 'Total paid can not be greater than Calculated management fees in contract');
 				$this->db->trans_rollback(); // Rollback the transaction if the condition is met

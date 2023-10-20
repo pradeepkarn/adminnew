@@ -245,7 +245,7 @@ $sess = (object)($this->session->userdata); ?>
                                         <td><input type="date" id="installmentDate" name="installmentDate" style="background: rgba(0, 0, 0, 0); border: none;" value="<?php $d = date_create($dates[$i - 1]);
                                                                                                                                                                         echo date_format($d, 'Y-m-d');
                                                                                                                                                                         ?>" readonly> </td>
-                                        <td><input type="text" class="form-control input-lg paymentAmount" name="paymentAmount[]" id="paymentAmount" value="<?php echo  $totalRent; ?>" <?php
+                                        <td><input type="text" class="form-control input-lg paymentAmount" name="paymentAmount[]" id="paymentAmount" value="<?php echo $pendingAmount; ?>" <?php
                                                                                                                                                                                         if ((isset($status) && ($status == 1)) || ($totalRent == 0)) { ?> style="background: rgba(0, 0, 0, 0); border: none;" <?php } ?>></td>
                                         <td><input type="number" class="form-control input-lg" name="paidAmount" style="background: rgba(0, 0, 0, 0); border: none;" id="paidAmount" value="<?php echo $totalPaidAmount;    ?>" readonly></td>
                                         <td><input type="number" class="form-control input-lg" name="pendingAmount[]" style="background: rgba(0, 0, 0, 0); border: none; color:red;" id="pendingAmount" <?php if (isset($status) && ($status == 1)) { ?> value="<?php echo $pendingAmount; ?>" <?php } else { ?> value="<?php echo $totalRent; ?>" <?php } ?> readonly></td>
@@ -341,7 +341,29 @@ $sess = (object)($this->session->userdata); ?>
                                         <td><?php
                                             $d = date_create($recordOwnersDueData[$i]->paidDate);
                                             echo date_format($d, 'd-m-Y'); ?></td>
-                                        <td><?php echo $recordOwnersDueData[$i]->paidAmount; ?></td>
+                                        <td>
+                                            <?php //echo $recordOwnersDueData[$i]->paidAmount; ?>
+
+
+                                            <div class="d-flex align-items-start gap-2">
+                                            <div>
+
+                                                <input type="number" data-amtType="<?php echo $recordOwnersDueData[$i]->type; ?>" scope="any" class="form-control upateTransData" value="<?php echo $recordOwnersDueData[$i]->paidAmount; ?>">
+
+                                                <input type="hidden" scope="any" class="form-control upateTransTotalAmt" value="<?php echo $recordOwnersDueData[$i]->totalAmount; ?>">
+                                                <input type="hidden" scope="any" class="form-control upateTransPendingAmt" value="<?php echo $recordOwnersDueData[$i]->pendingAmount; ?>">
+                                                <input type="hidden" scope="any" class="form-control upateTransId" value="<?php echo $recordOwnersDueData[$i]->id; ?>">
+
+                                            </div>
+                                            <div>
+                                                <button id="<?php echo uniqid(rand(100, 999)); ?>" class="btn btn-primary upateTransBtn">
+                                                    <span class="d-flex gap-2 align-items-center"><i class="fas fa-arrow-left"></i> Update</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+
+                                        </td>
                                         <td><?php echo $recordOwnersDueData[$i]->pendingAmount; ?></td>
                                         <td><?php if ($recordOwnersDueData[$i]->paidStatus == 1) {
                                                 echo   $this->lang->line('COMPLETELY_PAID');
@@ -371,7 +393,59 @@ $sess = (object)($this->session->userdata); ?>
         </div>
     <?php endif; ?>
 </div>
+<script>
+    
+    const upateTransId = document.querySelectorAll(".upateTransId");
+    const upateTransTotalAmt = document.querySelectorAll(".upateTransTotalAmt");
+    const upateTransPendingAmt = document.querySelectorAll(".upateTransPendingAmt");
+    const upateTransData = document.querySelectorAll(".upateTransData");
+    const updateBtnArr = document.querySelectorAll(".upateTransBtn");
+    var cn = document.querySelector("#contractNumber").value;
 
+    for (let i = 0; i < updateBtnArr.length; i++) {
+        updateBtnArr[i].addEventListener("click", (function(index) {
+            return function() {
+                const data = {
+                    type: upateTransData[index].getAttribute("data-amtType"),
+                    recordId: upateTransId[index].value,
+                    paidAmt: upateTransData[index].value,
+                    pendingAmt: upateTransPendingAmt[index].value,
+                    totalAmt: upateTransTotalAmt[index].value,
+                    contractNumber: cn
+                };
+                sendViaJax(
+                    data,
+                    `contracts/updateManagementFee`,
+                    `contracts/ownersdue/${cn}`
+                );
+            };
+        })(i));
+    }
+
+    function sendViaJax(data, reqUrl, returnUrl) {
+        $.ajax({
+            url: `<?php echo site_url(); ?>${reqUrl}`,
+            dataType: 'json',
+            method: "POST",
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(".transferBtn").prop('disabled', true);
+            },
+            success: function(data) {
+                if (data.status == "true") {
+                    showSuccessToast(data.message, '<?php echo $this->lang->line('success')  ?>');
+                    setTimeout(function() {
+                        window.location.href = `<?php echo base_url(); ?>${returnUrl}`;
+                    }, 4000);
+                } else {
+                    showDangerToast(data.message, '<?php echo $this->lang->line('danger')  ?>');
+                    return false;
+                }
+            }
+        });
+    }
+</script>
 
 <script>
     function openTab(evt, cityName) {

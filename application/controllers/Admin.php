@@ -112,6 +112,7 @@ class Admin extends CI_Controller
 	public function rentrequest()
 	{
 		$filter = isset($_GET['filter']) ? strval($_GET['filter']) : null;
+		$year = isset($_GET['year']) ? strval($_GET['year']) : null;
 		$this->load->library('Admin_acess'); // [[ ======= this will restrict direct access to users who are not logged in ======= ]]
 		$this->load->model('Dashboard_model', 'dashboardModel');
 
@@ -119,7 +120,7 @@ class Admin extends CI_Controller
 		$data['ln'] = !empty($data['ln']) ? $data['ln'] : 'ar';
 		$data['menu'] = 'dashboard';
 
-		$dgraph = $this->dashboardModel->getRentRequests($filter);
+		$dgraph = $this->dashboardModel->getRentRequests($filter,$year);
 
 		$datagraph['stat'][] = $this->lang->line('TOTAL_COLLECTION');
 		$datagraph['cnt'][] = $dgraph[0]->stat;
@@ -145,6 +146,7 @@ class Admin extends CI_Controller
 	public function ownersDuesrequest()
 	{
 		$filter = isset($_GET['filter']) ? strval($_GET['filter']) : null;
+		$year = isset($_GET['year']) ? strval($_GET['year']) : null;
 		$this->load->library('Admin_acess'); // [[ ======= this will restrict direct access to users who are not logged in ======= ]]
 		$this->load->model('Dashboard_model', 'dashboardModel');
 
@@ -152,7 +154,7 @@ class Admin extends CI_Controller
 		$data['ln'] = !empty($data['ln']) ? $data['ln'] : 'ar';
 		$data['menu'] = 'dashboard';
 
-		$dgraph = $this->dashboardModel->getOwnersDuesRequests($filter);
+		$dgraph = $this->dashboardModel->getOwnersDuesRequests($filter,$year);
 
 		$datagraph1['stat'][] = $this->lang->line('UNPAID_OWNERS_DUE');
 		$datagraph1['cnt'][] = $dgraph[0]->stat;
@@ -178,6 +180,7 @@ class Admin extends CI_Controller
 	public function incomerequest()
 	{
 		$filter = isset($_GET['filter']) ? strval($_GET['filter']) : null;
+		$year = isset($_GET['year']) ? strval($_GET['year']) : null;
 		$this->load->library('Admin_acess'); // [[ ======= this will restrict direct access to users who are not logged in ======= ]]
 		$this->load->model('Dashboard_model', 'dashboardModel');
 
@@ -185,7 +188,7 @@ class Admin extends CI_Controller
 		$data['ln'] = !empty($data['ln']) ? $data['ln'] : 'ar';
 		$data['menu'] = 'dashboard';
 
-		$dgraph = $this->dashboardModel->getIncomeRequests($filter);
+		$dgraph = $this->dashboardModel->getIncomeRequests($filter,$year);
 
 		$datagraph['stat'][] = $this->lang->line('AGENCY_FEE');
 		$datagraph['cnt'][] = $dgraph[0]->stat;

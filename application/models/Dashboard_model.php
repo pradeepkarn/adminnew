@@ -19,7 +19,7 @@ class Dashboard_model extends CI_Model
 	// 	return $query->result();
 	// }
 
-	public function getRentRequests(string $contractStatus = null)
+	public function getRentRequests(string $contractStatus = null, $year = null)
 	{
 		$this->db->select('
         SUM(totalRent) AS cnt,
@@ -28,6 +28,7 @@ class Dashboard_model extends CI_Model
             FROM tbl_installments i
             JOIN tbl_contracts c ON i.contractNumber = c.contractNumber
             WHERE ' . ($contractStatus !== null ? "c.contractStatus = '$contractStatus'" : "1=1") . '
+            AND ' . ($year !== null ? "YEAR(c.startDate) = '$year'" : "1=1") . '
         ) AS stat
     ');
 
@@ -45,50 +46,107 @@ class Dashboard_model extends CI_Model
 	// 	$query = $this->db->get();
 	// 	return $query->result();
 	// }
-	public function getOwnersDuesRequests(string $contractStatus = null)
+	public function getOwnersDuesRequests(string $contractStatus = null, $year = null)
 	{
 		$this->db->select("
 			(SELECT SUM(mf.paidAmount) 
 			 FROM `tbl_managementfee` mf
 			 JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
-			 WHERE (mf.paidAmount != '' OR mf.paidAmount IS NOT NULL) AND mf.type = 3 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ") AS stat,
+			 WHERE (mf.paidAmount != '' OR mf.paidAmount IS NOT NULL) AND mf.type = 3 
+			 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "") .
+			($year !== null ? "AND YEAR(c.startDate) = '$year'" : "") . ") AS stat,
 			
 			(
 				(SELECT SUM(i.paidAmount) 
 				 FROM tbl_installments i
 				 JOIN tbl_contracts c ON i.contractNumber = c.contractNumber
-				 WHERE (i.paidAmount != '' OR i.paidAmount IS NOT NULL) AND " . ($contractStatus !== null ? "c.contractStatus = '$contractStatus'" : "1=1") . ") - 
-			
+				 WHERE (i.paidAmount != '' OR i.paidAmount IS NOT NULL) 
+				 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "") .
+			($year !== null ? "AND YEAR(c.startDate) = '$year'" : "") . ")
+			) - 
+			(
 				(SELECT SUM(mf.paidAmount) 
 				 FROM `tbl_managementfee` mf
 				 JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
-				 WHERE (mf.paidAmount != '' OR mf.paidAmount IS NOT NULL) AND mf.type = 3 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ")
+				 WHERE (mf.paidAmount != '' OR mf.paidAmount IS NOT NULL) AND mf.type = 3 
+				 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "") .
+			($year !== null ? "AND YEAR(c.startDate) = '$year'" : "") . ")
 			) AS cnt
 		");
 
 		$query = $this->db->get();
-		// echo $this->db->last_query();
 		return $query->result();
 	}
+	// public function getOwnersDuesRequests(string $contractStatus = null, $year = null)
+	// {
+	// 	$yearCondition = "";
+	// if ($year !== null) {
+	//     $yearCondition = "AND YEAR(c.startDate) = '$year'";
+	// }
+	// 	$this->db->select("
+	// 		(SELECT SUM(mf.paidAmount) 
+	// 		 FROM `tbl_managementfee` mf
+	// 		 JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
+	// 		 WHERE (mf.paidAmount != '' OR mf.paidAmount IS NOT NULL) AND mf.type = 3 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ") AS stat,
 
+	// 		(
+	// 			(SELECT SUM(i.paidAmount) 
+	// 			 FROM tbl_installments i
+	// 			 JOIN tbl_contracts c ON i.contractNumber = c.contractNumber
+	// 			 WHERE (i.paidAmount != '' OR i.paidAmount IS NOT NULL) AND " . ($contractStatus !== null ? "c.contractStatus = '$contractStatus'" : "1=1") . ") - 
 
-	public function getIncomeRequests(string $contractStatus = null)
+	// 			(SELECT SUM(mf.paidAmount) 
+	// 			 FROM `tbl_managementfee` mf
+	// 			 JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
+	// 			 WHERE (mf.paidAmount != '' OR mf.paidAmount IS NOT NULL) AND mf.type = 3 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ")
+	// 		) AS cnt
+	// 	");
+
+	// 	$query = $this->db->get();
+	// 	// echo $this->db->last_query();
+	// 	return $query->result();
+	// }
+
+	public function getIncomeRequests(string $contractStatus = null, $year = null)
 	{
+		$yearCondition = "";
+		if ($year !== null) {
+			$yearCondition = "AND YEAR(c.startDate) = '$year'";
+		}
+	
 		$this->db->select("
-        (SELECT SUM(mf.paidAmount) 
-         FROM `tbl_managementfee` mf
-         JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
-         WHERE mf.type = 1 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ") AS stat,
-        
-        (SELECT SUM(mf.paidAmount) 
-         FROM `tbl_managementfee` mf
-         JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
-         WHERE mf.type = 2 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ") AS cnt
-    ");
-
+			(SELECT SUM(mf.paidAmount) 
+			 FROM `tbl_managementfee` mf
+			 JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
+			 WHERE mf.type = 1 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . " $yearCondition) AS stat,
+			
+			(SELECT SUM(mf.paidAmount) 
+			 FROM `tbl_managementfee` mf
+			 JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
+			 WHERE mf.type = 2 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . " $yearCondition) AS cnt
+		");
+	
 		$query = $this->db->get();
 		return $query->result();
 	}
+	
+	// public function getIncomeRequests(string $contractStatus = null, $year=null)
+	// {
+	// 	$this->db->select("
+    //     (SELECT SUM(mf.paidAmount) 
+    //      FROM `tbl_managementfee` mf
+    //      JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
+    //      WHERE mf.type = 1 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ") AS stat,
+        
+    //     (SELECT SUM(mf.paidAmount) 
+    //      FROM `tbl_managementfee` mf
+    //      JOIN tbl_contracts c ON mf.contractNumber = c.contractNumber
+    //      WHERE mf.type = 2 " . ($contractStatus !== null ? "AND c.contractStatus = '$contractStatus'" : "AND 1=1") . ") AS cnt
+    // ");
+
+	// 	$query = $this->db->get();
+	// 	return $query->result();
+	// }
 
 	// function contract_stats(string $contractStatus= null) {
 	// 	$sql = "SELECT DATE_FORMAT(createdOn, '%b %Y') AS stat, COUNT(*) AS cnt
@@ -100,39 +158,40 @@ class Dashboard_model extends CI_Model
 	// 	return $query->result();
 	// }
 
-	function contract_stats($contractStatus = null, $selectedYear = null) {
+	function contract_stats($contractStatus = null, $selectedYear = null)
+	{
 		// Initialize the WHERE clause
 		$whereClause = "";
-	
+
 		// Check if a year filter is provided
 		if ($selectedYear !== null) {
 			// Use CodeIgniter's query builder to add the year filter
 			$this->db->where("YEAR(startDate)", $selectedYear);
 		}
-	
+
 		// Select the desired columns and group by month and year
 		$this->db->select("DATE_FORMAT(startDate, '%b %Y') AS stat, COUNT(*) AS cnt");
 		$this->db->from("tbl_contracts");
-	
+
 		// Apply the WHERE clause if it's not empty
 		if (!empty($whereClause)) {
 			$this->db->where($whereClause);
 		}
-	
+
 		// Group by the formatted date and order by year-month
 		$this->db->group_by("DATE_FORMAT(startDate, '%Y-%m')");
 		$this->db->order_by("DATE_FORMAT(startDate, '%Y-%m')");
-	
+
 		// Execute the query
 		$query = $this->db->get();
-	
+
 		// Debugging: Print the last executed query
 		// echo $this->db->last_query();
-	
+
 		// Return the result as an array of objects
 		return $query->result();
 	}
-	
+
 	// public function getIncomeRequests()
 	// {
 	// 	//	select(SELECT sum(totalAmount) FROM `tbl_managementfee` where type=1)as mgmtFee,(SELECT sum(totalAmount) FROM `tbl_managementfee` where type=2)as agencyFee

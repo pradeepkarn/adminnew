@@ -1,7 +1,3 @@
- <?php
- $filter=isset($_GET['filter'])?$_GET['filter']:null;
- $year=isset($_GET['year'])?"&year=".$_GET['year']:null;
- ?>
  <!-- Page wrapper  -->
  <!-- ============================================================== -->
  <div class="page-wrapper" style="min-height: 100vh;">
@@ -28,7 +24,7 @@
          </div>
          <div class="col-5 align-self-center">
            <div class="customize-input float-<?php echo rtl ? 'left' : 'right'; ?>">
-             <select id="yearFilter" class="custom-select custom-select-set form-control bg-white border-0 custom-shadow custom-radius">
+             <select id="yearFilter" class="year-filter custom-select custom-select-set form-control bg-white border-0 custom-shadow custom-radius">
                <option value="2023" <?php if (isset($_GET['year']) && $_GET['year'] == '2023') echo 'selected'; ?>>2023</option>
                <option value="2022" <?php if (isset($_GET['year']) && $_GET['year'] == '2022') echo 'selected'; ?>>2022</option>
                <option value="2021" <?php if (isset($_GET['year']) && $_GET['year'] == '2021') echo 'selected'; ?>>2021</option>
@@ -36,39 +32,33 @@
                <option value="2019" <?php if (isset($_GET['year']) && $_GET['year'] == '2019') echo 'selected'; ?>>2019</option>
                <option value="2018" <?php if (isset($_GET['year']) && $_GET['year'] == '2018') echo 'selected'; ?>>2018</option>
              </select>
-             <input id="filterFromGet" type="hidden" name="filter" value="<?php echo isset($_GET['filter']) ? strval($_GET['filter']) : null; ?>">
+             <input type="hidden" name="filter" id="currentFilter" value="<?php echo isset($_GET['filter']) ? "?filter=" . strval($_GET['filter']) : null; ?>">
            </div>
 
            <script>
              // Get a reference to the select element for year filter
              const yearFilterSelect = document.getElementById("yearFilter");
-             const filterFromGet = document.getElementById("filterFromGet");
 
              // Add an event listener to detect changes
-             yearFilterSelect.addEventListener("change", updateURL);
-             filterFromGet.addEventListener("change", updateURL);
-
-             function updateURL() {
-               // Get the selected year value and filter value
+             yearFilterSelect.addEventListener("change", function() {
+               // Get the selected year value
                const selectedYear = yearFilterSelect.value;
-               const filterValue = filterFromGet.value;
-
-               // Get the base URL without query parameters
+               const currentFilter = document.getElementById('currentFilter').value;
+               const filterParam = currentFilter?`&filter=${currentFilter}`:null;
+               // Construct the new URL with the year filter parameter
                const currentUrl = window.location.href;
-               const baseUrl = currentUrl.split('?')[0];
+               const baseUrl = currentUrl.split('?')[0]; // Get the base URL without query parameters
 
-               // Construct the new URL based on the values
-               let newUrl = baseUrl;
+               // Check if the selected year is not empty
                if (selectedYear !== "") {
-                 newUrl += `?year=${selectedYear}`;
+                 const newUrl = `${baseUrl}?year=${selectedYear}${filterParam}`;
+                 // Redirect to the new URL
+                 window.location.href = newUrl;
+               } else {
+                 // If the selected year is empty, remove the year filter parameter from the URL
+                 window.location.href = baseUrl;
                }
-               if (filterValue !== "") {
-                 newUrl += (selectedYear !== "" ? "&" : "?") + `filter=${filterValue}`;
-               }
-
-               // Redirect to the new URL
-               window.location.href = newUrl;
-             }
+             });
            </script>
 
          </div>
@@ -89,32 +79,28 @@
                         echo "selected";
                       } ?> value="2"><?php echo $this->lang->line('SUSPENDED'); ?></option>
            </select>
-           <input id="yearFromGet" type="hidden" name="year" value="<?php echo isset($_GET['year']) ? strval($_GET['year']) : null; ?>">
            <script>
              // Get a reference to the select element
              const filterSelect = document.getElementById("filter");
-             const yearFromGet = document.getElementById("yearFromGet");
+
              // Add an event listener to detect changes
              filterSelect.addEventListener("change", function() {
                // Get the selected value
                const selectedValue = filterSelect.value;
-               const selectedYear = yearFromGet.value; // Get the value of yearFromGet
 
                // Construct the new URL with the filter parameter
                const currentUrl = window.location.href;
                const baseUrl = currentUrl.split('?')[0]; // Get the base URL without query parameters
 
-               // Construct the new URL based on the values
-               let newUrl = baseUrl;
+               // Check if the selected value is not empty
                if (selectedValue !== "") {
-                 newUrl += `?filter=${selectedValue}`;
+                 const newUrl = `${baseUrl}?filter=${selectedValue}`;
+                 // Redirect to the new URL
+                 window.location.href = newUrl;
+               } else {
+                 // If the selected value is empty, remove the filter parameter from the URL
+                 window.location.href = baseUrl;
                }
-               if (selectedYear !== "") { // Check if selectedYear is not empty
-                 newUrl += (selectedValue !== "" ? "&" : "?") + `year=${selectedYear}`;
-               }
-
-               // Redirect to the new URL
-               window.location.href = newUrl;
              });
            </script>
          </div>
@@ -181,7 +167,7 @@
                      const res_data = await $.ajax({
                        type: "POST",
                        dataType: "json",
-                       url: "<?php echo base_url('admin/rentrequest'); ?><?php echo isset($_GET['filter']) ? "?filter=" . strval($_GET['filter']).$year : null; ?>",
+                       url: "<?php echo base_url('admin/rentrequest'); ?>?filter=<?php echo isset($_GET['filter']) ? strval($_GET['filter']) : null; ?><?php echo isset($_GET['year']) ? "&year=" . strval($_GET['year']) : null; ?>",
                        data: {
                          task: 2
                        }
@@ -224,7 +210,7 @@
                      const res_data = await $.ajax({
                        type: "POST",
                        dataType: "json",
-                       url: "<?php echo base_url('admin/ownersDuesrequest'); ?><?php echo isset($_GET['filter']) ? "?filter=" . strval($_GET['filter']).$year : null; ?>",
+                       url: "<?php echo base_url('admin/ownersDuesrequest'); ?>?filter=<?php echo isset($_GET['filter']) ? strval($_GET['filter']) : null; ?><?php echo isset($_GET['year']) ? "&year=" . strval($_GET['year']) : null; ?>",
                        data: {
                          task: 2
                        }
@@ -266,7 +252,7 @@
                      const res_data = await $.ajax({
                        type: "POST",
                        dataType: "json",
-                       url: "<?php echo base_url('admin/incomerequest'); ?><?php echo isset($_GET['filter']) ? "?filter=" . strval($_GET['filter']).$year : null; ?>",
+                       url: "<?php echo base_url('admin/incomerequest'); ?>?filter=<?php echo isset($_GET['filter']) ? strval($_GET['filter']) : null; ?><?php echo isset($_GET['year']) ? "&year=" . strval($_GET['year']) : null; ?>",
                        data: {
                          task: 2
                        }
@@ -308,7 +294,7 @@
                      const res_data = await $.ajax({
                        type: "POST",
                        dataType: "json",
-                       url: "<?php echo base_url('admin/unitsrequest'); ?><?php echo isset($_GET['filter']) ? "?filter=" . strval($_GET['filter']).$year : null; ?>",
+                       url: "<?php echo base_url('admin/unitsrequest'); ?>?filter=<?php echo isset($_GET['filter']) ? strval($_GET['filter']) : null; ?><?php echo isset($_GET['year']) ? "&year=" . strval($_GET['year']) : null; ?>",
                        data: {
                          task: 2
                        }
@@ -349,7 +335,7 @@
                      const res_data = await $.ajax({
                        type: "POST",
                        dataType: "json",
-                       url: "<?php echo base_url('admin/contractStatus/'); ?>",
+                       url: "<?php echo base_url('admin/contractStatus'); ?>?filter=<?php echo isset($_GET['filter']) ? strval($_GET['filter']) : null; ?><?php echo isset($_GET['year']) ? "&year=" . strval($_GET['year']) : null; ?>",
                        data: {
                          task: 2
                        }
@@ -392,7 +378,7 @@
                      const res_data = await $.ajax({
                        type: "POST",
                        dataType: "json",
-                       url: "<?php echo base_url('admin/contract_stats'); ?><?php echo isset($_GET['year']) ? "?year=" . strval($_GET['year']) : null; ?><?php echo isset($_GET['year']) ? "?year=" . strval($_GET['year']) : null; ?>",
+                       url: "<?php echo base_url('admin/contract_stats'); ?><?php echo isset($_GET['year']) ? "?year=" . strval($_GET['year']) : null; ?>",
                        data: {
                          task: 2
                        }
